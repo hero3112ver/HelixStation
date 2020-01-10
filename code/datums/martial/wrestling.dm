@@ -12,7 +12,6 @@
 	name = "Wrestling"
 	id = MARTIALART_WRESTLING
 	var/datum/action/slam/slam = new/datum/action/slam()
-	var/datum/action/throw_wrassle/throw_wrassle = new/datum/action/throw_wrassle()
 	var/datum/action/kick/kick = new/datum/action/kick()
 	var/datum/action/strike/strike = new/datum/action/strike()
 	var/datum/action/drop/drop = new/datum/action/drop()
@@ -30,10 +29,6 @@
 		if("kick")
 			streak = ""
 			kick(A,D)
-			return 1
-		if("throw")
-			streak = ""
-			throw_wrassle(A,D)
 			return 1
 		if("slam")
 			streak = ""
@@ -53,17 +48,6 @@
 	var/mob/living/carbon/human/H = owner
 	H.mind.martial_art.streak = "slam"
 
-/datum/action/throw_wrassle
-	name = "Throw (Cinch) - Spin a cinched opponent around and throw them."
-	button_icon_state = "wrassle_throw"
-
-/datum/action/throw_wrassle/Trigger()
-	if(owner.incapacitated())
-		to_chat(owner, "<span class='warning'>You can't WRESTLE while you're OUT FOR THE COUNT.</span>")
-		return
-	owner.visible_message("<span class='danger'>[owner] prepares to THROW!</span>", "<b><i>Your next attack will be a THROW.</i></b>")
-	var/mob/living/carbon/human/H = owner
-	H.mind.martial_art.streak = "throw"
 
 /datum/action/kick
 	name = "Kick - A powerful kick, sends people flying away from you. Also useful for escaping from bad situations."
@@ -108,7 +92,6 @@
 		drop.Grant(H)
 		kick.Grant(H)
 		slam.Grant(H)
-		throw_wrassle.Grant(H)
 		strike.Grant(H)
 
 /datum/martial_art/wrestling/on_remove(mob/living/carbon/human/H)
@@ -116,7 +99,6 @@
 	drop.Remove(H)
 	kick.Remove(H)
 	slam.Remove(H)
-	throw_wrassle.Remove(H)
 	strike.Remove(H)
 
 /datum/martial_art/wrestling/harm_act(mob/living/carbon/human/A, mob/living/carbon/human/D)
@@ -125,78 +107,6 @@
 	log_combat(A, D, "punched with wrestling")
 	..()
 
-/datum/martial_art/wrestling/proc/throw_wrassle(mob/living/carbon/human/A, mob/living/carbon/human/D)
-	if(!D)
-		return
-	if(!A.pulling || A.pulling != D)
-		to_chat(A, "You need to have [D] in a cinch!")
-		return
-	D.forceMove(A.loc)
-	D.setDir(get_dir(D, A))
-
-	D.Stun(80)
-	D.visible_message("<span class='danger'><B>[A] starts spinning around with [D]!</B></span>", \
-					"<span class='userdanger'>[A] starts spinning around with you!</span>")
-	A.emote("scream")
-
-	for (var/i = 0, i < 20, i++)
-		var/delay = 5
-		switch (i)
-			if (17 to INFINITY)
-				delay = 0.25
-			if (14 to 16)
-				delay = 0.5
-			if (9 to 13)
-				delay = 1
-			if (5 to 8)
-				delay = 2
-			if (0 to 4)
-				delay = 3
-
-		if (A && D)
-
-			if (get_dist(A, D) > 1)
-				to_chat(A, "[D] is too far away!")
-				return 0
-
-			if (!isturf(A.loc) || !isturf(D.loc))
-				to_chat(A, "You can't throw [D] from here!")
-				return 0
-
-			A.setDir(turn(A.dir, 90))
-			var/turf/T = get_step(A, A.dir)
-			var/turf/S = D.loc
-			if ((S && isturf(S) && S.Exit(D)) && (T && isturf(T) && T.Enter(A)))
-				D.forceMove(T)
-				D.setDir(get_dir(D, A))
-		else
-			return 0
-
-		sleep(delay)
-
-	if (A && D)
-		// These are necessary because of the sleep call.
-
-		if (get_dist(A, D) > 1)
-			to_chat(A, "[D] is too far away!")
-			return 0
-
-		if (!isturf(A.loc) || !isturf(D.loc))
-			to_chat(A, "You can't throw [D] from here!")
-			return 0
-
-		D.forceMove(A.loc) // Maybe this will help with the wallthrowing bug.
-
-		D.visible_message("<span class='danger'><B>[A] throws [D]!</B></span>", \
-						"<span class='userdanger'>[A] throws you!</span>")
-		playsound(A.loc, "swing_hit", 50, 1)
-		var/turf/T = get_edge_target_turf(A, A.dir)
-		if (T && isturf(T))
-			if (!D.stat)
-				D.emote("scream")
-			D.throw_at(T, 10, 4, A, TRUE, TRUE, callback = CALLBACK(D, /mob/living/carbon/human.proc/Paralyze, 20))
-	log_combat(A, D, "has thrown with wrestling")
-	return 0
 
 /datum/martial_art/wrestling/proc/FlipAnimation(mob/living/carbon/human/D)
 	set waitfor = FALSE

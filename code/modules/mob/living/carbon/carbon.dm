@@ -142,9 +142,12 @@
 					to_chat(src, "<span class='notice'>You gently let go of [throwable_mob].</span>")
 				var/turf/start_T = get_turf(loc) //Get the start and target tile for the descriptors
 				var/turf/end_T = get_turf(target)
-				if(start_T && end_T)
-					log_combat(src, throwable_mob, "thrown", addition="grab from tile in [AREACOORD(start_T)] towards tile at [AREACOORD(end_T)]")
-
+				if(start_T && end_T)//					log_combat(src, throwable_mob, "thrown", addition="grab from tile in [AREACOORD(start_T)] towards tile at [AREACOORD(end_T)]")
+					visible_message("<span class='danger'>[src] attempts to throw [throwable_mob].</span>", \
+								"<span class='danger'>You can't throw [throwable_mob].</span>")
+					log_message("Tried to throw [throwable_mob]", LOG_ATTACK)
+					return
+					
 	else if(!CHECK_BITFIELD(I.item_flags, ABSTRACT) && !HAS_TRAIT(I, TRAIT_NODROP))
 		thrown_thing = I
 		dropItemToGround(I)
@@ -435,7 +438,7 @@
 /mob/living/carbon/proc/vomit(lost_nutrition = 10, blood = FALSE, stun = TRUE, distance = 1, message = TRUE, toxic = FALSE)
 	if(HAS_TRAIT(src, TRAIT_NOHUNGER))
 		return 1
-	
+
 	if(!has_mouth())
 		return 1
 
@@ -902,7 +905,7 @@
 /mob/living/carbon/has_mouth()
 	for(var/obj/item/bodypart/head/head in bodyparts)
 		if(head.mouth)
-			return TRUE 
+			return TRUE
 
 /mob/living/carbon/can_resist()
 	return bodyparts.len > 2 && ..()
