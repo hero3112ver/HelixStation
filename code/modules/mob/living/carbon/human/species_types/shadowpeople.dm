@@ -184,8 +184,6 @@
 		return
 	if(isliving(AM))
 		var/mob/living/L = AM
-		if(isethereal(AM))
-			AM.emp_act(EMP_LIGHT)
 
 		if(iscyborg(AM))
 			var/mob/living/silicon/robot/borg = AM

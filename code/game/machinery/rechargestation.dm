@@ -80,13 +80,13 @@
 
 /obj/machinery/recharge_station/open_machine()
 	. = ..()
-	if(iscyborg(occupant) || isethereal(occupant))
+	if(iscyborg(occupant))
 		use_power = IDLE_POWER_USE
 
 /obj/machinery/recharge_station/close_machine()
 	. = ..()
 	if(occupant)
-		if(iscyborg(occupant) || isethereal(occupant))
+		if(iscyborg(occupant))
 			use_power = ACTIVE_POWER_USE
 		add_fingerprint(occupant)
 
@@ -113,11 +113,6 @@
 			R.heal_bodypart_damage(repairs, repairs - 1)
 		if(R.cell)
 			R.cell.charge = min(R.cell.charge + recharge_speed, R.cell.maxcharge)
-	if(isethereal(occupant))
-		var/mob/living/carbon/human/H = occupant
-		var/datum/species/ethereal/E = H.dna?.species
-		if(E)
-			E.adjust_charge(recharge_speed / 70) //Around 3 per process if unupgraded
 
 /obj/machinery/recharge_station/proc/restock_modules()
 	if(occupant)
